@@ -114,17 +114,39 @@ POST /api/v1/user/register
 Body(JSON): {"username": "admin", "password": "admin123456"}
 ```
 
-### 2. 生成短链
+### 2. 自动生成短链
 
-当前**没有创建短链的 HTTP 接口**，需要通过数据库写入一条 `short_url` 记录
-（`short_tag` 可用于 `utils` 的随机生成逻辑，也可自定义空格别名）。示例 SQL：
+用 HTTP 接口一键生成（服务端自动随机产生唯一 `short_tag` 并入库）：
 
-```sql
-INSERT INTO short_url (short_tag, short_url, long_url, visits_count, created_by, msg_context)
-VALUES ('abc123', 'http://127.0.0.1:8000/abc123', 'https://www.python.org', 0, 'admin', '测试');
+```
+POST /api/v1/short
+Body(JSON):
+{
+  "long_url": "https://www.python.org",
+  "created_by": "admin",   // 可选
+  "msg_context": "官网",    // 可选，内容说明
+  "length": 6              // 可选，短码长度 4~32，默认 7
+}
 ```
 
-写库后即可访问短链：`http://127.0.0.1:8000/abc123`。
+返回：
+
+```json
+{
+  "code": "200",
+  "msg": "短链生成成功",
+  "data": {
+    "id": 6,
+    "short_tag": "DF6joU",
+    "short_url": "http://127.0.0.1:8000/DF6joU",
+    "long_url": "https://www.python.org",
+    "visits_count": 0
+  }
+}
+```
+
+> `long_url` 必须以 `http://` 或 `https://` 开头，否则返回 400。
+> 生成的 `short_url` 会根据请求 Host 自动拼接，形如 `http://127.0.0.1:8000/{short_tag}`。
 
 ### 3. 使用短链（访问跳转）
 
@@ -132,16 +154,16 @@ VALUES ('abc123', 'http://127.0.0.1:8000/abc123', 'https://www.python.org', 0, '
 GET /{short_tag}
 ```
 
-例如访问 `http://127.0.0.1:8000/RKCRtYD`，服务会：
+例如访问 `http://127.0.0.1:8000/DF6joU`，服务会：
 
 1. 用 `short_tag` 查询 `short_url` 表；
-2. 命中则访问次数 `visits_count + 1`，并 302 跳转到对应的 `long_url`；
+2. 命中则访问次数 `visits_count + 1`，并 307/302 跳转到对应的 `long_url`；
 3. 未命中返回"没有对应短链信息记录"。
 
 命令行验证：
 
 ```bash
-curl -I http://127.0.0.1:8000/RKCRtYD
+curl -i http://127.0.0.1:8000/DF6joU
 ```
 
 ---

@@ -16,7 +16,7 @@ class Settings(BaseSettings):
 
     APP_NAME: str = "fastapishorturl"
     APP_VERSION: str = "1.0.0"
-    ASYNC_DATABASE_URL: str = "sqlite+aiosqlite:///short.db"
+    ASYNC_DATABASE_URL: str = "sqlite+aiosqlite:///src/fastapishorturl/short.db"
     JWT_SECRET_KEY: str
     JWT_ALGORITHM: str = "HS256"
 

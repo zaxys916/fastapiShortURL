@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from .api.user import router_user
-from .api.short import router_short
+from .api.short import router_short, router_short_api
 
 app = FastAPI(title='fastapi集成短链服务')
 
@@ -25,6 +25,7 @@ async def shutdown_event():
 
 app.include_router(router_user)
 app.include_router(router_short)
+app.include_router(router_short_api)
 
 if __name__ == '__main__':
     import uvicorn
