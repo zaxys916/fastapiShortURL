@@ -93,6 +93,59 @@ uv run uvicorn fastapishorturl.main:app --host 0.0.0.0 --port 8000 --workers 4
 
 ---
 
+## 4.x 短链的生成与使用
+
+### 目录模板库 `short.db`
+
+> 本项目随源码附带一个**模板数据库** `src/fastapishorturl/short.db`，
+> 已内置一张可登录的演示账号与几条测试短链，克隆后可直接体验。
+
+| 资源     | 内容                                                                              |
+| -------- | --------------------------------------------------------------------------------- |
+| 演示账号 | `admin`（密码 `admin123456`）                                                     |
+| 测试短链 | `RKCRtYD` → python.org、`fVDwiI8` → fastapi.tiangolo.com、`8lsqmuz` → example.com |
+
+> ⚠️ 模板库自带演示密码，仅供本地体验。部署生产环境请**重新注册用户**并忽略/重建该库。
+
+### 1. 创建账号（注册）
+
+```
+POST /api/v1/user/register
+Body(JSON): {"username": "admin", "password": "admin123456"}
+```
+
+### 2. 生成短链
+
+当前**没有创建短链的 HTTP 接口**，需要通过数据库写入一条 `short_url` 记录
+（`short_tag` 可用于 `utils` 的随机生成逻辑，也可自定义空格别名）。示例 SQL：
+
+```sql
+INSERT INTO short_url (short_tag, short_url, long_url, visits_count, created_by, msg_context)
+VALUES ('abc123', 'http://127.0.0.1:8000/abc123', 'https://www.python.org', 0, 'admin', '测试');
+```
+
+写库后即可访问短链：`http://127.0.0.1:8000/abc123`。
+
+### 3. 使用短链（访问跳转）
+
+```
+GET /{short_tag}
+```
+
+例如访问 `http://127.0.0.1:8000/RKCRtYD`，服务会：
+
+1. 用 `short_tag` 查询 `short_url` 表；
+2. 命中则访问次数 `visits_count + 1`，并 302 跳转到对应的 `long_url`；
+3. 未命中返回"没有对应短链信息记录"。
+
+命令行验证：
+
+```bash
+curl -I http://127.0.0.1:8000/RKCRtYD
+```
+
+---
+
 ## 5. 生产部署建议
 
 ### 5.1 进程守护（Windows 可用 NSSM / RunAsService）
