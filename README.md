@@ -71,14 +71,14 @@ python -c "import secrets; print(secrets.token_urlsafe(48))"
 
 ```bash
 cd src
-uv run uvicorn fastapishorturl.main:app --host 0.0.0.0 --port 8000 --reload
+uv run uvicorn fastapishorturl.main:app --host 127.0.0.1 --port 8000 --reload
 ```
 
 **生产模式（多进程）**：
 
 ```bash
 cd src
-uv run uvicorn fastapishorturl.main:app --host 0.0.0.0 --port 8000 --workers 4
+uv run uvicorn fastapishorturl.main:app --host 127.0.0.1 --port 8000 --workers 4
 ```
 
 > 说明：本项目包入口是 `fastapishorturl`（见 `pyproject.toml`），`main.py` 中的
