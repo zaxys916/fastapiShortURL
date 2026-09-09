@@ -2,8 +2,7 @@ from fastapi import HTTPException, status
 from jose import jwt
 from typing import Dict, Any
 
-SECRET_KEY = "la3rwLn7VA%A9v*NC^$FX5J5QtW^T!B4"
-ALGORITHM = "HS256"
+from ..config.config import get_settings
 
 
 class AuthTokenHelper:
@@ -11,7 +10,8 @@ class AuthTokenHelper:
     @staticmethod
     def token_encode(data: Dict[str, Any]) -> str:
         """编码生成 JWT Token"""
-        return jwt.encode(data, SECRET_KEY, algorithm=ALGORITHM)
+        settings = get_settings()
+        return jwt.encode(data, settings.JWT_SECRET_KEY, algorithm=settings.JWT_ALGORITHM)
 
     @staticmethod
     def token_decode(token: str) -> Dict[str, Any]:
@@ -21,12 +21,15 @@ class AuthTokenHelper:
         Raises:
             HTTPException: 当 Token 无效或过期时
         """
+        settings = get_settings()
         credentials_exception = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Could not validate credentials",
             headers={"WWW-Authenticate": "Bearer"},
         )
         try:
-            return jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+            return jwt.decode(
+                token, settings.JWT_SECRET_KEY, algorithms=[settings.JWT_ALGORITHM]
+            )
         except Exception:
             raise credentials_exception

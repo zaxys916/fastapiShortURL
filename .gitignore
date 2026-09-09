@@ -11,5 +11,10 @@ wheels/
 *.sqlite
 *.sqlite3
 
+# Environment / secrets (commit .env_example, never .env)
+.env
+*.env
+!.env_example
+
 # Virtual environments
 .venv
